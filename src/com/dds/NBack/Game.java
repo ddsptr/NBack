@@ -29,7 +29,9 @@ class Game extends Observable {
 
     public void start(){
         for (int i = 0; i < GAME_CYCLES; i++) {
-
+            currentPoint = getRandomPoint();
+            setChanged();
+            notifyObservers();
         }
     }
 }
