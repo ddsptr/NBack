@@ -30,6 +30,7 @@ public class GameFragment extends Fragment implements Observer{
             @Override
             public void onClick(View v) {
                 Game game = new Game((Observer) fragment, 2);
+                game.start();
             }
         });
         return rootView;

@@ -9,13 +9,14 @@ import java.util.Random;
 class Game extends Observable {
     public static final int FIELD_SIZE = 3;
     public static final int GAME_CYCLES = 20;
+    public static final int TIMELAPSE = 3 * 1000;
 
     private Point currentPoint;
     private int level;
 
     public Game(Observer observer, int level){
         this.level = level;
-
+        addObserver(observer);
     }
 
     public Point getRandomPoint(){
@@ -32,6 +33,11 @@ class Game extends Observable {
             currentPoint = getRandomPoint();
             setChanged();
             notifyObservers();
+            try {
+                Thread.sleep(TIMELAPSE);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
     }
 }
