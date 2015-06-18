@@ -25,6 +25,7 @@ public class GameFragment extends Fragment implements Observer{
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_game, container, false);
         Button button = ((Button) rootView.findViewById(R.id.btnStart));
+        return rootView;
     }
 
     public void update(Observable observable, Object data) {
