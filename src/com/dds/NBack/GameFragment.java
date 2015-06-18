@@ -24,7 +24,14 @@ public class GameFragment extends Fragment implements Observer{
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_game, container, false);
+        Fragment fragment = this;
         Button button = ((Button) rootView.findViewById(R.id.btnStart));
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Game game = new Game((Observer) fragment, 2);
+            }
+        });
         return rootView;
     }
 
