@@ -6,12 +6,13 @@ import java.util.Observable;
 import java.util.Observer;
 import java.util.Random;
 
-class Game extends Observable {
+class Game extends Observable implements Runnable{
     public static final int FIELD_SIZE = 3;
     public static final int GAME_CYCLES = 20;
-    public static final int TIMELAPSE = 3 * 1000;
+    public static final int TIMELAPSE = (int)(0.5 * 1000);
 
     private Point currentPoint;
+    private Point previousPoint;
     private int level;
 
     public Game(Observer observer, int level){
@@ -30,6 +31,7 @@ class Game extends Observable {
 
     public void start(){
         for (int i = 0; i < GAME_CYCLES; i++) {
+            previousPoint = currentPoint;
             currentPoint = getRandomPoint();
             setChanged();
             notifyObservers();
@@ -39,5 +41,14 @@ class Game extends Observable {
                 e.printStackTrace();
             }
         }
+    }
+
+    @Override
+    public void run() {
+        start();
+    }
+
+    public Point getPreviousPoint() {
+        return previousPoint;
     }
 }

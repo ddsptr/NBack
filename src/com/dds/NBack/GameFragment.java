@@ -30,17 +30,22 @@ public class GameFragment extends Fragment implements Observer{
             @Override
             public void onClick(View v) {
                 Game game = new Game((Observer) fragment, 2);
-                game.start();
+                game.run();
             }
         });
         return rootView;
     }
 
     public void update(Observable observable, Object data) {
-        game = (Game) observable;
-        Point point = game.getCurrentPoint();
         GridLayout gameGrid = (GridLayout) getActivity().findViewById(R.id.gameGrid);
+        game = (Game) observable;
+        Point previousPoint = game.getPreviousPoint();
+        if (previousPoint != null){
+            View previousPointView = gameGrid.getChildAt(previousPoint.x * game.FIELD_SIZE + previousPoint.y);
+            previousPointView.setVisibility(View.INVISIBLE);
+        }
+        Point point = game.getCurrentPoint();
         View pointView = gameGrid.getChildAt(point.x * game.FIELD_SIZE + point.y);
-        pointView.setBackgroundColor(getResources().getColor(R.color.black));
+        pointView.setVisibility(View.VISIBLE);
     }
 }
