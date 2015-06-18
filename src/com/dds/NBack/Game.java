@@ -1,5 +1,6 @@
 package com.dds.NBack;
 
+import android.app.Fragment;
 import android.graphics.Point;
 
 import java.util.Observable;
@@ -14,9 +15,11 @@ class Game extends Observable implements Runnable{
     private Point currentPoint;
     private Point previousPoint;
     private int level;
+    private Observer observer;
 
     public Game(Observer observer, int level){
         this.level = level;
+        this.observer = observer;
         addObserver(observer);
     }
 
@@ -34,7 +37,12 @@ class Game extends Observable implements Runnable{
             previousPoint = currentPoint;
             currentPoint = getRandomPoint();
             setChanged();
-            notifyObservers();
+            ((Fragment) observer).getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    notifyObservers();
+                }
+            });
             try {
                 Thread.sleep(TIMELAPSE);
             } catch (InterruptedException e) {
@@ -43,12 +51,12 @@ class Game extends Observable implements Runnable{
         }
     }
 
+    public Point getPreviousPoint() {
+        return previousPoint;
+    }
+
     @Override
     public void run() {
         start();
-    }
-
-    public Point getPreviousPoint() {
-        return previousPoint;
     }
 }
