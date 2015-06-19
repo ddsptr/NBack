@@ -3,9 +3,7 @@ package com.dds.NBack;
 import android.app.Fragment;
 import android.graphics.Point;
 
-import java.util.Observable;
-import java.util.Observer;
-import java.util.Random;
+import java.util.*;
 
 class Game extends Observable implements Runnable{
     public static final int FIELD_SIZE = 3;
@@ -16,6 +14,8 @@ class Game extends Observable implements Runnable{
     private Point previousPoint;
     private int level;
     private Observer observer;
+    private Queue<Point> moves = new LinkedList<>();
+    private boolean stopFlag;
 
     public Game(Observer observer, int level){
         this.level = level;
@@ -33,9 +33,14 @@ class Game extends Observable implements Runnable{
     }
 
     public void start(){
+        stopFlag = false;
         for (int i = 0; i < GAME_CYCLES; i++) {
+            if (stopFlag){
+                break;
+            }
             previousPoint = currentPoint;
             currentPoint = getRandomPoint();
+            moves.add(currentPoint);
             setChanged();
             ((Fragment) observer).getActivity().runOnUiThread(new Runnable() {
                 @Override
@@ -49,6 +54,10 @@ class Game extends Observable implements Runnable{
                 e.printStackTrace();
             }
         }
+    }
+
+    public void stop(){
+        stopFlag = true;
     }
 
     public Point getPreviousPoint() {
