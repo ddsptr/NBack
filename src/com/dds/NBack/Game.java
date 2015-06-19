@@ -5,12 +5,6 @@ import android.graphics.Point;
 
 import java.util.*;
 
-enum Matched {
-    Empty,
-    Match,
-    Mismatch
-}
-
 class Game extends Observable implements Runnable{
     public static final int FIELD_SIZE = 3;
     public static final int GAME_CYCLES = 20;
@@ -25,6 +19,8 @@ class Game extends Observable implements Runnable{
     private boolean checkMatchFlag;
     private Matched lastMatch = Matched.Empty;
     private Point nBackPoint;
+    private int matched;
+    private int mismatched;
 
     public Game(Observer observer, int level) {
         this.level = level;
@@ -38,9 +34,12 @@ class Game extends Observable implements Runnable{
     }
 
     public void start() {
-        stopFlag = false;
-        checkMatchFlag = false;
-        nBackPoint = null;
+        initializeNewGame();
+
+        startGameLoop();
+    }
+
+    private void startGameLoop() {
         for (int i = 0; i < GAME_CYCLES; i++) {
             lastMatch = Matched.Empty;
             if (stopFlag){
@@ -65,6 +64,14 @@ class Game extends Observable implements Runnable{
                 notifyChanged();
             }
         }
+    }
+
+    private void initializeNewGame() {
+        stopFlag = false;
+        checkMatchFlag = false;
+        nBackPoint = null;
+        matched = 0;
+        mismatched = 0;
     }
 
     private void notifyChanged() {
@@ -107,8 +114,24 @@ class Game extends Observable implements Runnable{
     private void checkMatch() {
         if (nBackPoint.equals(currentPoint)) {
             lastMatch = Matched.Match;
+            matched++;
         } else {
             lastMatch = Matched.Mismatch;
+            mismatched++;
         }
     }
+
+    public int getMatched() {
+        return matched;
+    }
+
+    public int getMismatched() {
+        return mismatched;
+    }
+}
+
+enum Matched {
+    Empty,
+    Match,
+    Mismatch
 }

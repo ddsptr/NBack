@@ -1,5 +1,6 @@
 package com.dds.NBack;
 
+import android.app.Activity;
 import android.app.Fragment;
 import android.graphics.Point;
 import android.os.Bundle;
@@ -8,6 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.GridLayout;
+import android.widget.TextView;
 
 import java.util.Observable;
 import java.util.Observer;
@@ -19,16 +21,20 @@ public class GameFragment extends Fragment implements Observer{
     private Game game;
     private GridLayout gameGrid;
     private Point previousPoint;
+    private TextView result;
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        gameGrid = (GridLayout) getActivity().findViewById(R.id.gameGrid);
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        GridLayout gameGrid = (GridLayout) getActivity().findViewById(R.id.gameGrid);
-
         View rootView = inflater.inflate(R.layout.fragment_game, container, false);
         Fragment fragment = this;
 
-        Button buttonStart = ((Button) rootView.findViewById(R.id.btnStart));
-        buttonStart.setOnClickListener(new View.OnClickListener() {
+        ((Button) rootView.findViewById(R.id.btnStart)).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 game = new Game((Observer) fragment, 2);
@@ -36,13 +42,21 @@ public class GameFragment extends Fragment implements Observer{
             }
         });
 
-        Button buttonStop = ((Button) rootView.findViewById(R.id.btnStop));
-        buttonStop.setOnClickListener(new View.OnClickListener() {
+        ((Button) rootView.findViewById(R.id.btnStop)).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 game.stop();
             }
         });
+
+        ((Button) rootView.findViewById(R.id.btnPosition)).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                game.match();
+            }
+        });
+
+        result = (TextView) rootView.findViewById(R.id.tvResult);
 
         return rootView;
     }
@@ -52,6 +66,11 @@ public class GameFragment extends Fragment implements Observer{
         game = (Game) observable;
         hideLastPoint();
         showNextPoint();
+        updateResult();
+    }
+
+    private void updateResult() {
+        result.setText(String.format("R: %s W: %s", game.getMatched(), game.getMismatched()));
     }
 
     private void showNextPoint(){

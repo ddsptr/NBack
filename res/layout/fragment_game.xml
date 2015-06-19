@@ -19,7 +19,7 @@
             android:layout_width="120dp"
             android:layout_height="wrap_content"
             android:text="POSITION"
-            android:id="@+id/button4" android:layout_alignParentBottom="true" android:layout_alignParentStart="true"
+            android:id="@+id/btnPosition" android:layout_alignParentBottom="true" android:layout_alignParentStart="true"
             android:layout_marginLeft="10dp" android:layout_marginBottom="10dp"/>
     <GridLayout
             android:id="@+id/gameGrid"
@@ -77,4 +77,14 @@
             android:id="@+id/btnStart"
             android:layout_marginRight="10dp"
             android:layout_alignParentTop="true" android:layout_alignParentEnd="true" android:layout_marginTop="10dp"/>
+    <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:id="@+id/tvResult"
+            android:layout_below="@+id/btnStart"
+            android:layout_toEndOf="@+id/btnStop"
+            android:layout_toStartOf="@id/btnStart"
+            android:gravity="center"
+            />
 </RelativeLayout>
