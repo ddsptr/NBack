@@ -1,6 +1,5 @@
 package com.dds.NBack;
 
-import android.app.Activity;
 import android.app.Fragment;
 import android.graphics.Point;
 import android.os.Bundle;
@@ -71,19 +70,24 @@ public class GameFragment extends Fragment implements Observer{
 
     private void updateResult() {
         result.setText(String.format("R: %s W: %s", game.getMatched(), game.getMismatched()));
+        if (game.peekLastMatch() == Matched.Match) {
+
+        }
     }
 
     private void showNextPoint(){
         Point point = game.getCurrentPoint();
-        View pointView = gameGrid.getChildAt(point.x * game.FIELD_SIZE + point.y);
-        pointView.setVisibility(View.VISIBLE);
+        getViewAtPoint(point).setVisibility(View.VISIBLE);
     }
 
     private void hideLastPoint(){
         previousPoint = game.getPreviousPoint();
         if (previousPoint != null) {
-            View previousPointView = gameGrid.getChildAt(previousPoint.x * game.FIELD_SIZE + previousPoint.y);
-            previousPointView.setVisibility(View.INVISIBLE);
+            getViewAtPoint(previousPoint).setVisibility(View.INVISIBLE);
         }
+    }
+
+    private View getViewAtPoint(Point point) {
+        return gameGrid.getChildAt(point.x * game.FIELD_SIZE + point.y);
     }
 }
