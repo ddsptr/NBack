@@ -47,6 +47,7 @@ public class GameFragment extends Fragment implements Observer{
         return rootView;
     }
 
+    @Override
     public void update(Observable observable, Object data) {
         game = (Game) observable;
         hideLastPoint();
