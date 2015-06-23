@@ -15,6 +15,7 @@ import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.GridLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.Observable;
 import java.util.Observer;
@@ -22,20 +23,19 @@ import java.util.Observer;
 /**
  * Created by dds on 17.06.15.
  */
-public class GameFragment extends Fragment implements Observer{
+public class GameFragment extends Fragment implements Observer {
     private final static String LOG_TAG = GameFragment.class.getSimpleName();
     private Game game;
     private GameDto gameDto;
     private GridLayout gameGrid;
-    private Point previousPoint;
     private TextView result;
-    private Matched matched;
     private Animation animationShow;
     private Animation animationHide;
-    private boolean paused;
-    private AlertDialog alertDialog;
+    private AnimatorSet positionAnimatorGreen;
+    private AnimatorSet positionAnimatorRed;
     private Button btnPosition;
-    private AnimatorSet positionAnimator;
+    private Button btnStartPause;
+    private boolean positionPushed = false;
 
     @Override
     public void onStart() {
@@ -49,46 +49,46 @@ public class GameFragment extends Fragment implements Observer{
         Fragment fragment = this;
         game = new Game((Observer) fragment);
 
-        View btnStartPause = rootView.findViewById(R.id.btnStartPause);
+        btnStartPause = (Button) rootView.findViewById(R.id.btnStartPause);
         btnStartPause.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                game.initializeParams(2, TimeLapse.SLOW);
-                new Thread(game).start();
-//                if (game.getState() == State.STOPPED) {
-//                    if (previousPoint != null) {
-//                        getViewAtPoint(previousPoint).setVisibility(View.INVISIBLE);
-//                    }
-//                    game.initializeParams(2, TimeLapse.SLOW);
-//                    new Thread(game).start();
-//                    ((Button) btnStartPause).setText("PAUSE");
-//                } else if (game.getState() != State.PAUSED) {
-//                    ((Button) btnStartPause).setText("RESUME");
-//                    game.pause();
-//                } else if (game.getState() == State.PAUSED) {
-//                    ((Button) btnStartPause).setText("START");
-//                    game.pause();
-//                }
+                if (game.getState() == State.STOPPED) {
+                    game.initializeParams(2, TimeLapse.SLOW);
+                    new Thread(game).start();
+                    rootView.setKeepScreenOn(true);
+                    btnStartPause.setText("PAUSE");
+                } else if (game.getState() == State.PAUSED) {
+                    rootView.setKeepScreenOn(true);
+                    btnStartPause.setText("PAUSE");
+                    game.pause();
+                } else {
+                    rootView.setKeepScreenOn(false);
+                    btnStartPause.setText("RESUME");
+                    game.pause();
+                }
             }
         });
 
         rootView.findViewById(R.id.btnStop).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //game.stop();
-                game.pause();
+                game.stop();
+                hidePoint();
             }
         });
 
         btnPosition = (Button) rootView.findViewById(R.id.btnPosition);
-//        btnPosition.
-        positionAnimator = (AnimatorSet) AnimatorInflater.loadAnimator(getActivity(), R.animator.flash);
-        positionAnimator.setTarget(btnPosition);
+        positionAnimatorGreen = (AnimatorSet) AnimatorInflater.loadAnimator(getActivity(), R.animator.flash_green);
+        positionAnimatorGreen.setTarget(btnPosition);
+        positionAnimatorRed = (AnimatorSet) AnimatorInflater.loadAnimator(getActivity(), R.animator.flash_red);
+        positionAnimatorRed.setTarget(btnPosition);
 
         btnPosition.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 game.match();
+                positionPushed = true;
             }
         });
 
@@ -114,45 +114,51 @@ public class GameFragment extends Fragment implements Observer{
     public void update(Observable observable, Object data) {
         gameDto = (GameDto) data;
         if (gameDto.getState() == State.SHOWING_POINT) {
-            Log.d(LOG_TAG,"SHOWING_POINT");
+            Log.d(LOG_TAG, "SHOWING_POINT");
             showPoint();
         } else if (gameDto.getState() == State.HIDING_POINT) {
-            Log.d(LOG_TAG,"HIDING_POINT");
+            Log.d(LOG_TAG, "HIDING_POINT");
             hidePoint();
         } else if (gameDto.getState() == State.MATCHING) {
-            Log.d(LOG_TAG,"MATCHING");
-            matched = gameDto.getLastMatch();
-            if (matched == Matched.MATCH) {
-                flashButtonGreen();
-            }
+            Log.d(LOG_TAG, "MATCHING");
+            updateResult();
         } else if (gameDto.getState() == State.PAUSED) {
-//            pause();
-            Log.d(LOG_TAG,"PAUSED");
+            Toast.makeText(getActivity(), "GAME PAUSED!", Toast.LENGTH_LONG).show();
+            Log.d(LOG_TAG, "PAUSED");
         } else if (gameDto.getState() == State.STOPPED) {
-            Log.d(LOG_TAG,"STOPPED");
+            Log.d(LOG_TAG, "STOPPED");
+            result.setText(String.format("GAME OVER! R: %s W: %s", gameDto.getMatched(), gameDto.getMismatched()));
+            btnStartPause.setText("START");
+            getView().setKeepScreenOn(false);
         }
-        updateResult();
     }
 
     private void updateResult() {
         Matched matched = gameDto.getLastMatch();
         if (matched == Matched.MATCH) {
             result.setTextColor(getResources().getColor(R.color.green));
+            if (positionPushed) {
+                flashButtonGreen();
+                positionPushed = false;
+            }
         } else if (matched == Matched.MISMATCH) {
             result.setTextColor(getResources().getColor(R.color.red));
-            flashButtonGreen();
+            if (positionPushed) {
+                flashButtonRed();
+                positionPushed = false;
+            }
         } else {
             result.setTextColor(getResources().getColor(R.color.black));
         }
         result.setText(String.format("R: %s W: %s", gameDto.getMatched(), gameDto.getMismatched()));
     }
 
-    private void showPoint(){
+    private void showPoint() {
         getViewAtPoint(gameDto.getCurrentPoint()).startAnimation(animationShow);
         getViewAtPoint(gameDto.getCurrentPoint()).setVisibility(View.VISIBLE);
     }
 
-    private void hidePoint(){
+    private void hidePoint() {
         getViewAtPoint(gameDto.getCurrentPoint()).startAnimation(animationHide);
         getViewAtPoint(gameDto.getCurrentPoint()).setVisibility(View.INVISIBLE);
     }
@@ -161,17 +167,11 @@ public class GameFragment extends Fragment implements Observer{
         return gameGrid.getChildAt(point.x * game.FIELD_SIZE + point.y);
     }
 
-    private void pause() {
-        paused = true;
-        alertDialog = new AlertDialog.Builder(getActivity())
-                //.setTitle("PAUSED!")
-                .setMessage("PAUSED!")
-                //.
-                .create();
-        alertDialog.show();
+    private void flashButtonGreen() {
+        positionAnimatorGreen.start();
     }
 
-    private void flashButtonGreen() {
-        positionAnimator.start();
+    private void flashButtonRed() {
+        positionAnimatorRed.start();
     }
 }

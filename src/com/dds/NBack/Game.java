@@ -24,7 +24,7 @@ class Game extends Observable implements Runnable{
     private int mismatched;
     private int timeLapse;
     private boolean initializedParams = false;
-    private State state = State.SHOWING_POINT;
+    private State state = State.STOPPED;
     private long startDelay;
     private State stateAfterDelay;
     private int currentCycle;
@@ -50,11 +50,12 @@ class Game extends Observable implements Runnable{
     }
 
     private void startGameLoop() {
-
+        state = State.SHOWING_POINT;
         currentCycle = 0;
         while (true) {
             update();
             if (state == State.STOPPED) {
+                notifyStateChanged();
                 break;
             }
         }
@@ -109,7 +110,6 @@ class Game extends Observable implements Runnable{
                 break;
 
             case STOPPED:
-
                 break;
         }
     }
@@ -176,6 +176,7 @@ class Game extends Observable implements Runnable{
         nBackPoint = null;
         matched = 0;
         mismatched = 0;
+        moves.clear();
     }
 
     private void notifyStateChanged() {
@@ -191,7 +192,6 @@ class Game extends Observable implements Runnable{
 
     public void stop() {
         state = State.STOPPED;
-        notifyStateChanged();
     }
 
     public void match() {
@@ -220,10 +220,6 @@ class Game extends Observable implements Runnable{
         start();
     }
 
-    public State getState(){
-        return state;
-    }
-
     private void checkMatch() {
         if (nBackPoint != null) {
             Log.d(LOG_TAG, "nBackPoint x = " + nBackPoint.x + " y = " + nBackPoint.y);
@@ -243,6 +239,10 @@ class Game extends Observable implements Runnable{
 
     private GameDto toDto(){
         return new GameDto(currentPoint, matched, mismatched, state, lastMatch);
+    }
+
+    public State getState() {
+        return state;
     }
 }
 
